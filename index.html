@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cult Club - Fichas de Personagem D&D 5e</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Mate+SC&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body-container">
+
+    <div id="auth-view" class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div id="auth-card-container" class="w-full max-w-lg"> 
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <h1 class="font-medieval text-6xl text-center">Cult Club</h1>
+                    <div class="auth-header-decoration"></div>
+                </div>
+                
+                <form id="login-form" class="auth-form space-y-6">
+                    <h2 class="form-title font-medieval">Entrar no Culto</h2>
+                    <div>
+                        <label for="loginEmail" class="input-label">Email Arcano:</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="at-sign" class="input-icon"></i>
+                            <input type="email" id="loginEmail" class="input-field-auth" placeholder="seuemail@dominio.com" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="loginPassword" class="input-label">Senha Secreta:</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="key-round" class="input-icon"></i>
+                            <input type="password" id="loginPassword" class="input-field-auth" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-base btn-auth w-full">
+                        <i data-lucide="log-in"></i>Adentrar os Mistérios
+                    </button>
+                    <p id="login-error" class="error-message hidden"></p>
+                    <p class="text-center text-sm toggle-auth-form-link">
+                        Não possui um pacto? <button type="button" id="show-register-form-btn" class="font-semibold hover:underline">Inicie-se aqui!</button>
+                    </p>
+                </form>
+
+                <form id="register-form" class="auth-form space-y-6 hidden">
+                    <h2 class="form-title font-medieval">Iniciar no Culto</h2>
+                    <div>
+                        <label for="registerUsername" class="input-label">Seu Nome de Iniciado (Usuário):</label>
+                        <div class="input-wrapper">
+                           <i data-lucide="user-circle-2" class="input-icon"></i>
+                           <input type="text" id="registerUsername" class="input-field-auth" placeholder="Ex: Bruxo Supremo" required>
+                       </div>
+                   </div>
+                    <div>
+                        <label for="registerEmail" class="input-label">Seu Email de Neófito:</label>
+                         <div class="input-wrapper">
+                            <i data-lucide="mail-plus" class="input-icon"></i>
+                            <input type="email" id="registerEmail" class="input-field-auth" placeholder="novoemail@dominio.com" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="registerPassword" class="input-label">Crie sua Senha Ritualística:</label>
+                        <div class="input-wrapper">
+                             <i data-lucide="shield-check" class="input-icon"></i>
+                            <input type="password" id="registerPassword" class="input-field-auth" placeholder="••••••••" minlength="6" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-base btn-auth-secondary w-full">
+                        <i data-lucide="user-plus"></i>Pacto de Iniciação
+                    </button>
+                    <p id="register-error" class="error-message hidden"></p>
+                    <p class="text-center text-sm toggle-auth-form-link">
+                        Já possui um pacto? <button type="button" id="show-login-form-btn" class="font-semibold hover:underline">Adentre os mistérios!</button>
+                    </p>
+                </form>
+                <p id="auth-footer-note" class="auth-note">
+                    </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="container mx-auto p-4 md:p-8 min-h-screen hidden flex flex-col">
+        <div id="app-background-overlay"></div> 
+        
+        <header class="relative z-10 text-center mb-8 md:mb-12 fade-in">
+            <div class="flex justify-between items-center">
+                 <img src="imagens/sigiloscult.png" alt="Cult Club Sigil Esquerdo" class="h-12 w-12 md:h-16 md:w-16 opacity-80 sigil-header-left">
+                
+                <h1 class="font-medieval text-4xl sm:text-5xl md:text-6xl tracking-wider app-title">Cult Club</h1>
+                
+                 <img src="imagens/sigiloscult.png" alt="Cult Club Sigil Direito" class="h-12 w-12 md:h-16 md:w-16 opacity-80 sigil-header-right">
+            </div>
+             <div class="flex flex-col sm:flex-row justify-center items-center mt-4 space-y-2 sm:space-y-0 sm:space-x-4">
+                <p class="app-subtitle text-base sm:text-lg font-mate">Desvende os segredos de seus personagens!</p>
+            </div>
+            <div id="auth-status" class="mt-2 text-sm user-info-display"></div>
+        </header>
+
+        <div class="flex-grow"> 
+            <main id="sheet-list-view" class="relative z-10 fade-in">
+                <div class="flex justify-center mb-8">
+                    <button id="create-new-sheet-btn" class="btn-base btn-primary text-lg px-6 py-3">
+                        <i data-lucide="file-plus-2"></i>Criar Nova Ficha Arcana
+                    </button>
+                </div>
+                <div id="character-sheets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> 
+                    <p id="no-sheets-message" class="text-center text-gray-400 col-span-full">Nenhum grimório encontrado. Conjure um novo!</p>
+                </div>
+            </main>
+
+            <main id="sheet-editor-view" class="relative z-10 hidden fade-in">
+                <form id="character-sheet-form" class="card space-y-12"> 
+                    <input type="hidden" id="sheetId" name="sheetId">
+                    <div class="flex justify-between items-center">
+                        <h2 id="editor-title" class="font-medieval text-3xl md:text-4xl editor-section-title">Nova Ficha de Personagem</h2>
+                        <button type="button" id="close-editor-btn" class="btn-base btn-secondary !py-2 !px-3">
+                            <i data-lucide="x-circle"></i>Fechar Tomo
+                        </button>
+                    </div>
+
+                    <section>
+                        <h3 class="section-title">Informações Básicas</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6"> 
+                            <div><label for="characterName" class="input-label-sheet">Nome do Personagem:</label><input type="text" id="characterName" name="characterName" class="input-field" required></div>
+                            <div><label for="classLevel" class="input-label-sheet">Classe & Nível:</label><input type="text" id="classLevel" name="classLevel" class="input-field" placeholder="Ex: Feiticeiro 5"></div>
+                            <div><label for="race" class="input-label-sheet">Raça:</label><input type="text" id="race" name="race" class="input-field"></div>
+                            <div><label for="alignment" class="input-label-sheet">Alinhamento:</label><input type="text" id="alignment" name="alignment" class="input-field"></div>
+                            <div><label for="background" class="input-label-sheet">Antecedente:</label><input type="text" id="background" name="background" class="input-field"></div>
+                            <div><label for="playerName" class="input-label-sheet">Nome do Iniciado (Jogador):</label><input type="text" id="playerName" name="playerName" class="input-field"></div>
+                            <div><label for="experiencePoints" class="input-label-sheet">Pontos de Conhecimento Arcano (XP):</label><input type="number" id="experiencePoints" name="experiencePoints" class="input-field"></div>
+                            <div><label for="inspiration" class="input-label-sheet">Inspiração Divina:</label><input type="number" id="inspiration" name="inspiration" class="input-field" value="0"></div>
+                            <div><label for="proficiencyBonus" class="input-label-sheet">Bônus de Proficiência:</label><input type="text" id="proficiencyBonus" name="proficiencyBonus" class="input-field" readonly placeholder="Auto"></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="section-title">Atributos Primordiais</h3>
+                        <div id="ability-scores-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
+                        </div>
+                    </section>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-12"> 
+                        <section>
+                            <h3 class="section-title">Testes de Resistência (Salvaguardas)</h3>
+                            <div id="saving-throws-grid" class="space-y-3"> 
+                            </div>
+                        </section>
+                        <section>
+                            <h3 class="section-title">Perícias Arcanas e Mundanas</h3>
+                            <div id="skills-grid" class="space-y-3"> 
+                            </div>
+                        </section>
+                    </div>
+
+                    <section>
+                        <h3 class="section-title">Aptidões de Combate</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-6">
+                            <div><label for="armorClass" class="input-label-sheet">Classe de Armadura:</label><input type="number" id="armorClass" name="armorClass" class="input-field"></div>
+                            <div><label for="initiative" class="input-label-sheet">Iniciativa:</label><input type="text" id="initiative" name="initiative" class="input-field" readonly placeholder="Mod. DES"></div>
+                            <div><label for="speed" class="input-label-sheet">Velocidade:</label><input type="text" id="speed" name="speed" class="input-field"></div>
+                       
+                            <div><label for="hpMax" class="input-label-sheet">Pontos de Vida Máximos:</label><input type="number" id="hpMax" name="hpMax" class="input-field"></div>
+                            <div><label for="hpCurrent" class="input-label-sheet">Pontos de Vida Atuais:</label><input type="number" id="hpCurrent" name="hpCurrent" class="input-field"></div>
+                            <div><label for="hpTemp" class="input-label-sheet">Pontos de Vida Temporários:</label><input type="number" id="hpTemp" name="hpTemp" class="input-field"></div>
+                        
+                            <div class="md:col-span-2"><label for="hitDiceTotal" class="input-label-sheet">Dados de Vida (Total):</label><input type="text" id="hitDiceTotal" name="hitDiceTotal" class="input-field" placeholder="Ex: 5d10"></div>
+                            <div><label for="hitDiceCurrent" class="input-label-sheet">Dados de Vida (Atual):</label><input type="text" id="hitDiceCurrent" name="hitDiceCurrent" class="input-field"></div>
+                        </div>
+                        <div class="mt-8">
+                            <label class="input-label-sheet mb-3 block text-center sm:text-left">Testes Contra a Morte:</label>
+                            <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start space-y-3 sm:space-y-0 sm:space-x-8">
+                                <div class="flex items-center gap-3 text-sm">Sucessos: 
+                                    <input type="checkbox" id="deathSaveSuccess1" name="deathSaveSuccess1" class="custom-checkbox">
+                                    <input type="checkbox" id="deathSaveSuccess2" name="deathSaveSuccess2" class="custom-checkbox">
+                                    <input type="checkbox" id="deathSaveSuccess3" name="deathSaveSuccess3" class="custom-checkbox">
+                                </div>
+                                <div class="flex items-center gap-3 text-sm">Falhas: 
+                                    <input type="checkbox" id="deathSaveFailure1" name="deathSaveFailure1" class="custom-checkbox">
+                                    <input type="checkbox" id="deathSaveFailure2" name="deathSaveFailure2" class="custom-checkbox">
+                                    <input type="checkbox" id="deathSaveFailure3" name="deathSaveFailure3" class="custom-checkbox">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="section-title">Ataques e Magias</h3>
+                        <div>
+                            <label for="attacksText" class="input-label-sheet">Ataques (Nome, Bônus, Dano/Tipo):</label>
+                            <textarea id="attacksText" name="attacksText" class="textarea-field" rows="4"></textarea>
+                            <label for="spellsText" class="input-label-sheet mt-6">Magias (Lista, truques, espaços, CD, etc.):</label>
+                            <textarea id="spellsText" name="spellsText" class="textarea-field" rows="6"></textarea>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="section-title">Equipamento e Tesouros</h3>
+                        <textarea id="equipmentText" name="equipmentText" class="textarea-field" rows="5"></textarea>
+                    </section>
+
+                    <section>
+                        <h3 class="section-title">Psique do Personagem</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                            <div><label for="personalityTraits" class="input-label-sheet">Traços de Personalidade:</label><textarea id="personalityTraits" name="personalityTraits" class="textarea-field" rows="3"></textarea></div>
+                            <div><label for="ideals" class="input-label-sheet">Ideais:</label><textarea id="ideals" name="ideals" class="textarea-field" rows="3"></textarea></div>
+                            <div><label for="bonds" class="input-label-sheet">Vínculos:</label><textarea id="bonds" name="bonds" class="textarea-field" rows="3"></textarea></div>
+                            <div><label for="flaws" class="input-label-sheet">Defeitos:</label><textarea id="flaws" name="flaws" class="textarea-field" rows="3"></textarea></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="section-title">Características e Talentos Especiais</h3>
+                        <textarea id="featuresTraitsText" name="featuresTraitsText" class="textarea-field" rows="5"></textarea>
+                    </section>
+                    
+                    <section>
+                        <h3 class="section-title">Outras Proficiências e Idiomas Conhecidos</h3>
+                        <textarea id="proficienciesLanguagesText" name="proficienciesLanguagesText" class="textarea-field" rows="4"></textarea>
+                    </section>
+
+                    <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-8 border-t border-gray-700">
+                        <button type="button" id="cancel-edit-btn" class="btn-base btn-secondary">Descartar Mudanças</button>
+                        <button type="submit" id="save-sheet-btn" class="btn-base btn-primary">
+                            <i data-lucide="save"></i>Selar no Grimório
+                        </button>
+                    </div>
+                </form>
+            </main>
+        </div> 
+
+        <footer id="app-footer" class="relative z-10 text-center py-8 mt-auto border-t border-[var(--input-border)]">
+            <button id="logout-btn-footer" class="btn-base btn-secondary px-6 py-3 text-sm">
+                <i data-lucide="log-out"></i>Sair do Culto
+            </button>
+            <p class="text-xs text-gray-500 mt-4" id="app-footer-note"></p>
+        </footer>
+        
+        <div id="delete-confirm-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+            <div class="card max-w-sm mx-auto modal-animation">
+                <h3 class="text-xl font-medieval mb-4 modal-title">Confirmar Exílio</h3>
+                <p class="mb-6 text-gray-300">Tem certeza que deseja banir esta ficha para os planos inferiores? Esta ação não pode ser desfeita.</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancel-delete-btn" class="btn-base btn-secondary px-4 py-2">Cancelar</button>
+                    <button id="confirm-delete-btn" class="btn-base btn-danger px-4 py-2">Excluir</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="success-popup" class="popup-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-[60]">
+            <div class="popup-content success-popup-content text-center p-8 md:p-12 rounded-2xl"> 
+                <div class="popup-icon-wrapper success-icon-wrapper mx-auto mb-6">
+                    <i data-lucide="check-circle" class="popup-icon success-icon"></i>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-medieval mb-4 popup-title success-title">Ação Concluída!</h2>
+                <p class="text-lg md:text-xl text-gray-300 popup-message success-message font-mate">Operação realizada com sucesso.</p>
+            </div>
+        </div>
+
+        <div id="error-popup" class="popup-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-[60]">
+            <div class="popup-content error-popup-content text-center p-8 md:p-12 rounded-2xl"> 
+                <div class="popup-icon-wrapper error-icon-wrapper mx-auto mb-6">
+                    <i data-lucide="alert-octagon" class="popup-icon error-icon"></i>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-medieval mb-4 popup-title error-title">Feitiço Falhou!</h2>
+                <p class="text-lg md:text-xl text-gray-300 popup-message error-message-text font-mate">Algo deu errado.</p>
+                 <button id="close-error-popup-btn" class="btn-base btn-secondary mt-6">Entendido</button>
+            </div>
+        </div>
+
+    </div>
+    <script type="module" src="script.js" defer></script>
+</body>
+</html>
