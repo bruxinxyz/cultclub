@@ -100,8 +100,7 @@
             <main id="sheet-list-view" class="relative z-10 fade-in">
                 <div class="flex justify-center mb-8">
                     <button id="create-new-sheet-btn" class="btn-base btn-primary text-lg px-6 py-3">
-                        <i data-lucide="file-plus-2"></i>Criar Nova Ficha Arcana
-                    </button>
+                        Criar Nova Ficha Arcana </button>
                 </div>
                 <div id="character-sheets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> 
                     <p id="no-sheets-message" class="text-center text-gray-400 col-span-full">Nenhum grimório encontrado. Conjure um novo!</p>
@@ -111,11 +110,9 @@
             <main id="sheet-editor-view" class="relative z-10 hidden fade-in">
                 <form id="character-sheet-form" class="card space-y-12"> 
                     <input type="hidden" id="sheetId" name="sheetId">
-                    <div class="flex justify-between items-center">
-                        <h2 id="editor-title" class="font-medieval text-3xl md:text-4xl editor-section-title">Nova Ficha de Personagem</h2>
-                        <button type="button" id="close-editor-btn" class="btn-base btn-secondary !py-2 !px-3">
-                            <i data-lucide="x-circle"></i>Fechar Tomo
-                        </button>
+                    <div class="flex justify-between items-start"> <h2 id="editor-title" class="font-medieval text-3xl md:text-4xl editor-section-title mt-1">Nova Ficha de Personagem</h2>
+                        <button type="button" id="close-editor-btn" class="btn-base btn-icon btn-secondary">
+                            <i data-lucide="x-circle"></i> </button>
                     </div>
 
                     <section>
@@ -221,8 +218,7 @@
                     <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-8 border-t border-gray-700">
                         <button type="button" id="cancel-edit-btn" class="btn-base btn-secondary">Descartar Mudanças</button>
                         <button type="submit" id="save-sheet-btn" class="btn-base btn-primary">
-                            <i data-lucide="save"></i>Selar no Grimório
-                        </button>
+                           Selar no Grimório </button>
                     </div>
                 </form>
             </main>

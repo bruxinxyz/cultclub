@@ -6,7 +6,7 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
-    updateProfile // Importar updateProfile
+    updateProfile 
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { 
     getFirestore, 
@@ -72,10 +72,10 @@ const registerErrorEl = document.getElementById('register-error');
 const authCardContainer = document.getElementById('auth-card-container');
 const showRegisterFormBtn = document.getElementById('show-register-form-btn');
 const showLoginFormBtn = document.getElementById('show-login-form-btn');
-const authFooterNoteEl = document.getElementById('auth-footer-note'); // Para o rodapé da autenticação
-const appFooterNoteEl = document.getElementById('app-footer-note'); // Para o rodapé da app
+const authFooterNoteEl = document.getElementById('auth-footer-note'); 
+const appFooterNoteEl = document.getElementById('app-footer-note'); 
 
-const logoutBtnFooter = document.getElementById('logout-btn-footer'); // Novo ID para o botão de logout
+const logoutBtnFooter = document.getElementById('logout-btn-footer'); 
 
 const sheetListView = document.getElementById('sheet-list-view');
 const sheetEditorView = document.getElementById('sheet-editor-view');
@@ -142,10 +142,11 @@ function updateFooterText() {
 
 function showAuthView() {
     console.log("Cult Club: Exibindo Auth View");
-    updateFooterText(); // Atualiza o rodapé da auth view
+    updateFooterText(); 
     authView.classList.remove('hidden');
     appContainer.classList.add('hidden');
     bodyContainer.classList.add('animated-background');
+    if (logoutBtnFooter) logoutBtnFooter.classList.add('hidden'); // Esconde o botão de logout da app
     if (unsubscribeSheetsListener) {
         unsubscribeSheetsListener();
         unsubscribeSheetsListener = null;
@@ -157,10 +158,11 @@ function showAuthView() {
 
 function showAppView() {
     console.log("Cult Club: Exibindo App View");
-    updateFooterText(); // Atualiza o rodapé da app view
+    updateFooterText(); 
     authView.classList.add('hidden');
     appContainer.classList.remove('hidden');
     bodyContainer.classList.remove('animated-background'); 
+    if (logoutBtnFooter) logoutBtnFooter.classList.remove('hidden'); // Mostra o botão de logout da app
     loadCharacterSheets();
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -218,6 +220,7 @@ if(closeErrorPopupBtn) {
 function showEditor(sheetData = null) {
     sheetListView.classList.add('hidden');
     sheetEditorView.classList.remove('hidden');
+    if (logoutBtnFooter) logoutBtnFooter.classList.add('hidden'); // Esconde o botão de logout
     sheetEditorView.scrollIntoView({ behavior: 'smooth', block: 'start' });
     characterSheetForm.reset();
     document.getElementById('sheetId').value = '';
@@ -239,6 +242,7 @@ function showList() {
     console.log("Cult Club: showList chamada para exibir lista de fichas.");
     sheetEditorView.classList.add('hidden');
     sheetListView.classList.remove('hidden');
+    if (logoutBtnFooter) logoutBtnFooter.classList.remove('hidden'); // Mostra o botão de logout
     currentEditingSheetId = null;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -447,9 +451,11 @@ function displaySheetCard(sheetData, sheetId) {
             <p class="text-sm text-gray-400 mb-4 truncate">Raça: ${sheetData.race || 'N/A'}</p>
         </div>
         <div class="flex justify-end space-x-2 mt-auto pt-3 border-t border-[var(--input-border)]"> 
-            <button data-id="${sheetId}" class="edit-sheet-btn btn-base btn-card-action"> <i data-lucide="file-pen-line" class="inline-block mr-1 h-4 w-4"></i>Editar
+            <button data-id="${sheetId}" class="edit-sheet-btn btn-base btn-card-action"> 
+                <i data-lucide="file-pen-line" class="inline-block mr-1 h-4 w-4"></i>Editar
             </button>
-            <button data-id="${sheetId}" class="delete-sheet-btn btn-base btn-card-action-danger"> <i data-lucide="trash-2" class="inline-block mr-1 h-4 w-4"></i>Excluir
+            <button data-id="${sheetId}" class="delete-sheet-btn btn-base btn-card-action-danger"> 
+                 <i data-lucide="trash-2" class="inline-block mr-1 h-4 w-4"></i>Excluir
             </button>
         </div>
     `;
@@ -612,13 +618,13 @@ loginForm.addEventListener('submit', async (e) => {
 
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('registerUsername').value;
+    const username = document.getElementById('registerUsername').value.trim(); 
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
     registerErrorEl.textContent = ''; registerErrorEl.classList.add('hidden');
 
-    if (!username.trim()) {
-        registerErrorEl.textContent = "Por favor, insira um nome de usuário.";
+    if (!username) { 
+        registerErrorEl.textContent = "Por favor, insira um nome de usuário para o seu pacto.";
         registerErrorEl.classList.remove('hidden');
         return;
     }
@@ -626,9 +632,13 @@ registerForm.addEventListener('submit', async (e) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        await updateProfile(user, { displayName: username });
-        console.log("Cult Club: Perfil atualizado com displayName:", username);
-        showCustomPopup(successPopup, "Iniciação Concluída!", `Seu pacto com o Cult Club como "${username}" foi selado!`, 2500);
+        if (user) { 
+            await updateProfile(user, { displayName: username });
+            console.log("Cult Club: Perfil atualizado com displayName:", username);
+            showCustomPopup(successPopup, "Iniciação Concluída!", `Seu pacto com o Cult Club como "${username}" foi selado!`, 2500);
+        } else {
+            throw new Error("Usuário não criado corretamente.");
+        }
     } catch (error) {
         console.error("Erro de registro:", error);
         registerErrorEl.textContent = "Pacto de iniciação falhou: " + error.message.replace('Firebase: Error ', '').replace(/\(auth\/.*\)\.?/, '').trim();
@@ -636,7 +646,7 @@ registerForm.addEventListener('submit', async (e) => {
     }
 });
         
-logoutBtnFooter.addEventListener('click', async () => { // Atualizado para logoutBtnFooter
+logoutBtnFooter.addEventListener('click', async () => { 
     try {
         await signOut(auth);
     } catch (error) {
@@ -675,7 +685,7 @@ function initApp() {
     populateAbilityScores();
     populateSavingThrows();
     populateSkills();
-    updateFooterText(); // Chama para definir o texto do rodapé inicialmente
+    updateFooterText(); 
     if (typeof lucide !== 'undefined') { 
         lucide.createIcons(); 
     }
