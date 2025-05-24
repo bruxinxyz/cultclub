@@ -7,18 +7,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Mate+SC&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';</script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="body-container">
 
     <div id="auth-view" class="min-h-screen flex flex-col items-center justify-center p-4">
-        <div id="auth-card-container" class="w-full max-w-lg"> 
+        <div id="auth-card-container" class="w-full max-w-lg">
             <div class="auth-card">
                 <div class="auth-card-header">
                     <h1 class="font-medieval text-6xl text-center">Cult Club</h1>
                     <div class="auth-header-decoration"></div>
                 </div>
-                
+
                 <form id="login-form" class="auth-form space-y-6">
                     <h2 class="form-title font-medieval">Entrar no Culto</h2>
                     <div>
@@ -82,10 +84,10 @@
     </div>
 
     <div id="app-container" class="container mx-auto p-4 md:p-8 min-h-screen hidden flex flex-col">
-        <div id="app-background-overlay"></div> 
-        
+        <div id="app-background-overlay"></div>
+
         <header class="relative z-10 text-center mb-8 md:mb-12 fade-in">
-            <div class="flex justify-between items-center sigil-container"> 
+            <div class="flex justify-between items-center sigil-container">
                  <img src="imagens/sigiloscult.png" alt="Cult Club Sigil Esquerdo" class="h-12 w-12 md:h-16 md:w-16 sigil-header-left">
                 <h1 class="font-medieval text-4xl sm:text-5xl md:text-6xl tracking-wider app-title">Cult Club</h1>
                  <img src="imagens/sigiloscult.png" alt="Cult Club Sigil Direito" class="h-12 w-12 md:h-16 md:w-16 sigil-header-right">
@@ -96,19 +98,19 @@
             <div id="auth-status" class="mt-2 text-sm user-info-display"></div>
         </header>
 
-        <div class="flex-grow"> 
+        <div class="flex-grow relative">
             <main id="sheet-list-view" class="relative z-10 fade-in">
                 <div class="flex justify-center mb-8">
                     <button id="create-new-sheet-btn" class="btn-base btn-primary text-lg px-6 py-3">
                         Criar Nova Ficha Arcana </button>
                 </div>
-                <div id="character-sheets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> 
+                <div id="character-sheets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <p id="no-sheets-message" class="text-center text-gray-400 col-span-full">Nenhum grimório encontrado. Conjure um novo!</p>
                 </div>
             </main>
 
             <main id="sheet-editor-view" class="relative z-10 hidden fade-in">
-                <form id="character-sheet-form" class="card space-y-12"> 
+                <form id="character-sheet-form" class="card space-y-12">
                     <input type="hidden" id="sheetId" name="sheetId">
                     <div class="flex justify-between items-start"> <h2 id="editor-title" class="font-medieval text-3xl md:text-4xl editor-section-title mt-1">Nova Ficha de Personagem</h2>
                         <button type="button" id="close-editor-btn" class="btn-base btn-icon btn-secondary">
@@ -117,7 +119,7 @@
 
                     <section>
                         <h3 class="section-title">Informações Básicas</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6"> 
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
                             <div><label for="characterName" class="input-label-sheet">Nome do Personagem:</label><input type="text" id="characterName" name="characterName" class="input-field" required></div>
                             <div><label for="classLevel" class="input-label-sheet">Classe & Nível:</label><input type="text" id="classLevel" name="classLevel" class="input-field" placeholder="Ex: Feiticeiro 5"></div>
                             <div><label for="race" class="input-label-sheet">Raça:</label><input type="text" id="race" name="race" class="input-field"></div>
@@ -136,15 +138,15 @@
                         </div>
                     </section>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-12"> 
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-12">
                         <section>
                             <h3 class="section-title">Testes de Resistência (Salvaguardas)</h3>
-                            <div id="saving-throws-grid" class="space-y-3"> 
+                            <div id="saving-throws-grid" class="space-y-3">
                             </div>
                         </section>
                         <section>
                             <h3 class="section-title">Perícias Arcanas e Mundanas</h3>
-                            <div id="skills-grid" class="space-y-3"> 
+                            <div id="skills-grid" class="space-y-3">
                             </div>
                         </section>
                     </div>
@@ -155,23 +157,23 @@
                             <div><label for="armorClass" class="input-label-sheet">Classe de Armadura:</label><input type="number" id="armorClass" name="armorClass" class="input-field"></div>
                             <div><label for="initiative" class="input-label-sheet">Iniciativa:</label><input type="text" id="initiative" name="initiative" class="input-field" readonly placeholder="Mod. DES"></div>
                             <div><label for="speed" class="input-label-sheet">Velocidade:</label><input type="text" id="speed" name="speed" class="input-field"></div>
-                       
+
                             <div><label for="hpMax" class="input-label-sheet">Pontos de Vida Máximos:</label><input type="number" id="hpMax" name="hpMax" class="input-field"></div>
                             <div><label for="hpCurrent" class="input-label-sheet">Pontos de Vida Atuais:</label><input type="number" id="hpCurrent" name="hpCurrent" class="input-field"></div>
                             <div><label for="hpTemp" class="input-label-sheet">Pontos de Vida Temporários:</label><input type="number" id="hpTemp" name="hpTemp" class="input-field"></div>
-                        
+
                             <div class="md:col-span-2"><label for="hitDiceTotal" class="input-label-sheet">Dados de Vida (Total):</label><input type="text" id="hitDiceTotal" name="hitDiceTotal" class="input-field" placeholder="Ex: 5d10"></div>
                             <div><label for="hitDiceCurrent" class="input-label-sheet">Dados de Vida (Atual):</label><input type="text" id="hitDiceCurrent" name="hitDiceCurrent" class="input-field"></div>
                         </div>
                         <div class="mt-8">
                             <label class="input-label-sheet mb-3 block text-center sm:text-left">Testes Contra a Morte:</label>
                             <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start space-y-3 sm:space-y-0 sm:space-x-8">
-                                <div class="flex items-center gap-3 text-sm">Sucessos: 
+                                <div class="flex items-center gap-3 text-sm">Sucessos:
                                     <input type="checkbox" id="deathSaveSuccess1" name="deathSaveSuccess1" class="custom-checkbox">
                                     <input type="checkbox" id="deathSaveSuccess2" name="deathSaveSuccess2" class="custom-checkbox">
                                     <input type="checkbox" id="deathSaveSuccess3" name="deathSaveSuccess3" class="custom-checkbox">
                                 </div>
-                                <div class="flex items-center gap-3 text-sm">Falhas: 
+                                <div class="flex items-center gap-3 text-sm">Falhas:
                                     <input type="checkbox" id="deathSaveFailure1" name="deathSaveFailure1" class="custom-checkbox">
                                     <input type="checkbox" id="deathSaveFailure2" name="deathSaveFailure2" class="custom-checkbox">
                                     <input type="checkbox" id="deathSaveFailure3" name="deathSaveFailure3" class="custom-checkbox">
@@ -209,7 +211,7 @@
                         <h3 class="section-title">Características e Talentos Especiais</h3>
                         <textarea id="featuresTraitsText" name="featuresTraitsText" class="textarea-field" rows="5"></textarea>
                     </section>
-                    
+
                     <section>
                         <h3 class="section-title">Outras Proficiências e Idiomas Conhecidos</h3>
                         <textarea id="proficienciesLanguagesText" name="proficienciesLanguagesText" class="textarea-field" rows="4"></textarea>
@@ -222,7 +224,39 @@
                     </div>
                 </form>
             </main>
-        </div> 
+
+            <main id="pdf-viewer-view" class="relative z-10 hidden fade-in">
+                <div class="card p-6 md:p-8">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="font-medieval text-3xl md:text-4xl editor-section-title text-center sm:text-left">Oráculo dos Pergaminhos (PDF)</h2>
+                        <div class="flex items-center gap-2">
+                            <label for="pdf-file-input" class="btn-base btn-primary cursor-pointer text-sm">
+                                <i data-lucide="file-search" class="mr-2"></i> Carregar PDF
+                            </label>
+                            <input type="file" id="pdf-file-input" accept=".pdf" class="hidden">
+                            <button id="pdf-fullscreen-btn" class="btn-base btn-secondary text-sm">
+                                <i data-lucide="maximize" class="mr-2"></i> Tela Cheia
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pdf-viewer-controls" class="mb-4 flex items-center justify-center space-x-4 hidden">
+                        <span class="font-mate">Página <span id="pdf-page-num"></span> de <span id="pdf-page-count"></span></span>
+                    </div>
+
+                    <div id="pdf-render-wrapper" class="relative bg-gray-800/30 p-1 rounded-lg border border-[var(--input-border)] min-h-[60vh] flex items-center justify-center">
+                        <button id="pdf-overlay-prev-page" class="pdf-overlay-nav-arrow left-0 hidden">
+                            <i data-lucide="chevron-left" class="w-10 h-10"></i>
+                        </button>
+                        <canvas id="pdf-canvas" class="max-w-full h-auto rounded"></canvas>
+                        <button id="pdf-overlay-next-page" class="pdf-overlay-nav-arrow right-0 hidden">
+                            <i data-lucide="chevron-right" class="w-10 h-10"></i>
+                        </button>
+                        <p id="pdf-loader-message" class="text-xl font-mate text-center p-4">Selecione um arquivo PDF para iniciar a leitura.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
 
         <footer id="app-footer" class="relative z-10 text-center py-8 mt-auto border-t border-[var(--input-border)]">
             <button id="logout-btn-footer" class="btn-base btn-secondary px-6 py-3 text-sm">
@@ -230,7 +264,7 @@
             </button>
             <p class="text-xs text-gray-500 mt-4" id="app-footer-note"></p>
         </footer>
-        
+
         <div id="delete-confirm-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
             <div class="card max-w-sm mx-auto modal-animation">
                 <h3 class="text-xl font-medieval mb-4 modal-title">Confirmar Exílio</h3>
@@ -243,7 +277,7 @@
         </div>
 
         <div id="success-popup" class="popup-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-[60]">
-            <div class="popup-content success-popup-content text-center p-8 md:p-12 rounded-2xl"> 
+            <div class="popup-content success-popup-content text-center p-8 md:p-12 rounded-2xl">
                 <div class="popup-icon-wrapper success-icon-wrapper mx-auto mb-6">
                     <i data-lucide="check-circle" class="popup-icon success-icon"></i>
                 </div>
@@ -253,7 +287,7 @@
         </div>
 
         <div id="error-popup" class="popup-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-[60]">
-            <div class="popup-content error-popup-content text-center p-8 md:p-12 rounded-2xl"> 
+            <div class="popup-content error-popup-content text-center p-8 md:p-12 rounded-2xl">
                 <div class="popup-icon-wrapper error-icon-wrapper mx-auto mb-6">
                     <i data-lucide="alert-octagon" class="popup-icon error-icon"></i>
                 </div>
@@ -264,6 +298,21 @@
         </div>
 
     </div>
+
+    <div id="fab-container" class="fixed bottom-8 right-8 z-40 hidden">
+        <div id="fab-menu" class="fab-menu-items absolute bottom-full right-0 mb-3 space-y-2 hidden">
+            <button data-target-view="sheet-list-view" class="fab-menu-item btn-base btn-secondary w-full text-sm">
+                <i data-lucide="scroll-text" class="mr-2"></i> Fichas
+            </button>
+            <button data-target-view="pdf-viewer-view" class="fab-menu-item btn-base btn-secondary w-full text-sm">
+                <i data-lucide="book-open" class="mr-2"></i> Leitor PDF
+            </button>
+        </div>
+        <button id="fab-main-button" class="btn-base btn-primary rounded-full p-4 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <i data-lucide="grip" class="w-7 h-7"></i>
+        </button>
+    </div>
+
     <script type="module" src="script.js" defer></script>
 </body>
 </html>
