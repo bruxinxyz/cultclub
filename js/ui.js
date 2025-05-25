@@ -18,7 +18,7 @@ const fabMenu = document.getElementById('fab-menu');
 
 export function updateFooterText() {
     const currentYear = new Date().getFullYear();
-    const footerText = `© ${currentYear} Cult Club. Todos os direitos reservados.`;
+    const footerText = `© ${currentYear} Cult Project. Todos os direitos reservados.`;
     if (authFooterNoteEl) authFooterNoteEl.textContent = footerText;
     if (appFooterNoteEl) appFooterNoteEl.textContent = footerText;
 }
