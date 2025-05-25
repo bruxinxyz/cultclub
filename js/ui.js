@@ -8,12 +8,10 @@ const authFooterNoteEl = document.getElementById('auth-footer-note');
 const appFooterNoteEl = document.getElementById('app-footer-note');
 const logoutBtnFooter = document.getElementById('logout-btn-footer');
 
-// Views
 const sheetListView = document.getElementById('sheet-list-view');
 const sheetEditorView = document.getElementById('sheet-editor-view');
 const pdfViewerView = document.getElementById('pdf-viewer-view');
 
-// Elementos do FAB
 const fabContainer = document.getElementById('fab-container');
 const fabMainButton = document.getElementById('fab-main-button');
 const fabMenu = document.getElementById('fab-menu');
@@ -179,5 +177,4 @@ export function initErrorPopupListener() {
     }
 }
 
-// Exportar elementos que podem ser necessários externamente (ex: para popups)
 export { successPopup, errorPopup };

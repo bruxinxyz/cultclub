@@ -1,9 +1,19 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-import { initAuth, getCurrentUserId, setupAuthEventListeners, handleLogout } from './js/auth.js';
+import { initAuth, setupAuthEventListeners, handleLogout } from './js/auth.js';
 import { updateFooterText, showAuthViewUI, showAppViewUI, showSheetListViewUI, showPdfViewUI, initFab, initErrorPopupListener } from './js/ui.js';
-import { initSheetLogic, updateUserIdForSheets, populateAbilityScores, populateSavingThrows, populateSkills, openSheetEditor, setupSheetEventListeners, loadCharacterSheets } from './js/sheet_logic.js';
+import { 
+    initSheetLogic, 
+    updateUserIdForSheets, 
+    populateAbilityScores, 
+    populateSavingThrows, 
+    populateSkills, 
+    openSheetEditor, 
+    setupSheetEventListeners, 
+    loadCharacterSheets, 
+    calculateAllSheetBonuses
+} from './js/sheet_logic.js';
 import { initPdfViewer, getCurrentPdfDoc } from './js/pdf_viewer.js';
 
 
@@ -43,10 +53,7 @@ const appIdForFirestorePath = typeof __app_id !== 'undefined' ? __app_id : 'cult
 
 const firebaseApp = initializeApp(effectiveFirebaseConfig);
 const db = getFirestore(firebaseApp);
-setLogLevel('debug'); 
-
-let localUnsubscribeSheetsListener = null;
-
+setLogLevel('debug');
 
 function handleAuthStateChange(newUserId, isLoggedIn) {
     updateUserIdForSheets(newUserId); 
@@ -56,27 +63,20 @@ function handleAuthStateChange(newUserId, isLoggedIn) {
     } else {
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
-
-        showAuthViewUI(loginForm, registerForm, () => {
-            if (localUnsubscribeSheetsListener) {
-                localUnsubscribeSheetsListener();
-                localUnsubscribeSheetsListener = null;
-            }
-        });
+        showAuthViewUI(loginForm, registerForm, () => {});
     }
 }
-
 
 function initApp() {
     console.log("Cult Club: initApp (principal) começando...");
 
     initAuth(firebaseApp, handleAuthStateChange); 
-    initSheetLogic(db, appIdForFirestorePath);
+    initSheetLogic(db, appIdForFirestorePath); 
     initPdfViewer();
     initFab(showSheetListViewUI, () => showPdfViewUI(getCurrentPdfDoc())); 
     initErrorPopupListener();
 
-    populateAbilityScores();
+    populateAbilityScores(); 
     populateSavingThrows();
     populateSkills();
     
@@ -88,14 +88,9 @@ function initApp() {
     const showLoginBtn = document.getElementById('show-login-form-btn');
     setupAuthEventListeners(loginForm, registerForm, showRegisterBtn, showLoginBtn);
 
-    const logoutBtnFooter = document.getElementById('logout-btn-footer');
-    if (logoutBtnFooter) {
-        logoutBtnFooter.addEventListener('click', () => {
-            const fabMainButton = document.getElementById('fab-main-button');
-            let toggleFabFunc = null;
-            if (fabMainButton && fabMainButton.classList.contains('active')) {
-
-            }
+    const logoutBtnFooterEl = document.getElementById('logout-btn-footer');
+    if (logoutBtnFooterEl) {
+        logoutBtnFooterEl.addEventListener('click', () => {
             handleLogout(() => { 
                 const fabMainButton = document.getElementById('fab-main-button');
                 const fabMenu = document.getElementById('fab-menu');
@@ -114,12 +109,11 @@ function initApp() {
     const closeEditorBtn = document.getElementById('close-editor-btn');
     const createNewSheetBtn = document.getElementById('create-new-sheet-btn');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
-    const classLevelInput = document.getElementById('classLevel');
+    const classLevelInputEl = document.getElementById('classLevel');
     const cancelDeleteSheetBtn = document.getElementById('cancel-delete-btn');
     const confirmDeleteSheetBtn = document.getElementById('confirm-delete-btn');
-    setupSheetEventListeners(closeEditorBtn, createNewSheetBtn, cancelEditBtn, classLevelInput, cancelDeleteSheetBtn, confirmDeleteSheetBtn);
-
-
+    setupSheetEventListeners(closeEditorBtn, createNewSheetBtn, cancelEditBtn, classLevelInputEl, cancelDeleteSheetBtn, confirmDeleteSheetBtn);
+    
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
