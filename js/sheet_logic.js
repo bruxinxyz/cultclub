@@ -1,3 +1,4 @@
+// Cult Club/js/sheet_logic.js
 import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { ABILITIES, SKILLS, RACES, CLASSES, ARMOR_TYPES, SHIELD_BONUS, SPELLCASTING_ABILITIES_OPTIONS } from './constants.js';
 import { showCustomPopup, showSheetListViewUI, showSheetEditorUI } from './ui.js';
@@ -67,10 +68,10 @@ export function initSheetLogic(firestoreInstance, appIdPath) {
 }
 
 export function updateUserIdForSheets(newUserId) {
-    console.log("[SheetLogic DIAGNÓSTICO] updateUserIdForSheets chamado com userId:", newUserId);
+    // console.log("[SheetLogic DIAGNÓSTICO] updateUserIdForSheets chamado com userId:", newUserId);
     currentUserIdForSheets = newUserId;
     if (unsubscribeSheetsListener) {
-        console.log("[SheetLogic DIAGNÓSTICO] Desinscrevendo do listener de fichas anterior.");
+        // console.log("[SheetLogic DIAGNÓSTICO] Desinscrevendo do listener de fichas anterior.");
         unsubscribeSheetsListener();
         unsubscribeSheetsListener = null;
     }
@@ -128,6 +129,7 @@ function updateProficiencyBonusDisplay() {
     const classLevelStr = classLevelInput ? classLevelInput.value : "";
     const { totalLevel } = parseClassAndLevel(classLevelStr);
     const bonus = getProficiencyBonus(totalLevel);
+    // console.log(`[SheetLogic DIAGNÓSTICO] Classe & Nível Input: "${classLevelStr}" -> Nível Total: ${totalLevel}, Bônus Prof: ${bonus}`);
     const profBonusInput = document.getElementById('proficiencyBonus');
     if (profBonusInput) profBonusInput.value = formatBonus(bonus);
     return bonus;
@@ -184,17 +186,41 @@ function updateSkillBonus(skillKey, profBonus) {
     const baseScoreEl = document.getElementById(`${skillData.ability}Score`);
     const selectedRaceKey = raceSelect ? raceSelect.value : null;
     if (!baseScoreEl) return;
+
     const baseScore = parseInt(baseScoreEl.value) || 10;
     const racialBonus = getRacialBonusForAbility(selectedRaceKey, skillData.ability);
     const totalScore = baseScore + racialBonus;
     const modifier = getModifier(totalScore);
+
     const proficientCheckbox = document.getElementById(`skill_${skillKey}_proficient`);
+    const expertiseToggle = document.getElementById(`skill_${skillKey}_expertise_toggle`); 
+    
     const proficient = proficientCheckbox ? proficientCheckbox.checked : false;
-    const skillProfBonus = proficient ? profBonus : 0;
+    const hasExpertise = expertiseToggle ? expertiseToggle.classList.contains('active') : false;
+    
+    let skillProfBonus = 0;
+    if (proficient) {
+        skillProfBonus = hasExpertise ? profBonus * 2 : profBonus;
+    }
+    
     const totalBonusValue = modifier + skillProfBonus;
     const bonusDisplay = document.getElementById(`skill_${skillKey}_bonus`);
     if (bonusDisplay) bonusDisplay.textContent = formatBonus(totalBonusValue);
+
+    // Controla visibilidade e estado inicial do toggle de expertise
+    if (expertiseToggle) {
+        if (proficient) {
+            expertiseToggle.classList.remove('hidden'); // CORREÇÃO: Remove 'hidden'
+            expertiseToggle.classList.add('visible');   // Adiciona 'visible' para animação de entrada
+        } else {
+            expertiseToggle.classList.add('hidden');    // CORREÇÃO: Adiciona 'hidden'
+            expertiseToggle.classList.remove('visible', 'active', 'activating', 'deactivating');
+            expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4"></i>';
+            if(typeof lucide !== 'undefined') lucide.createIcons({nodes: [expertiseToggle]});
+        }
+    }
 }
+
 
 function updateInitiative() {
     const dexModifierEl = document.getElementById('dexterityModifier');
@@ -222,8 +248,7 @@ function updateRacialBonusesSummaryDisplay() {
         }
         if (raceKey === "meio_elfo") {
             const chaBonusInnate = RACES[raceKey].abilityScoreIncrease.charisma;
-            let chaAlreadyListed = false;
-            increases.forEach(inc => { if (inc.includes(ABILITIES.charisma)) chaAlreadyListed = true; });
+            let chaAlreadyListed = increases.some(inc => inc.startsWith(ABILITIES.charisma));
             if (!chaAlreadyListed && chaBonusInnate) increases.unshift(`${ABILITIES.charisma} ${formatBonus(chaBonusInnate)}`);
             increases.push("+1 em dois outros atributos (à escolha)");
         }
@@ -358,20 +383,63 @@ export function populateSkills() {
                 <input type="checkbox" id="skill_${key}_proficient" name="skill_${key}_proficient" class="custom-checkbox mr-2">
                 <label for="skill_${key}_proficient" class="text-sm cursor-pointer hover:text-[var(--accent-color)] transition-colors">${skill.name} <span class="text-xs text-gray-500">(${ABILITIES[skill.ability].slice(0, 3)})</span></label>
             </div>
-            <span id="skill_${key}_bonus" class="text-sm font-semibold proficiency-bonus-display ml-4 w-10 text-right">+0</span>`;
+            <button type="button" id="skill_${key}_expertise_toggle" class="expertise-toggle hidden" data-skill-key="${key}" title="Ativar/Desativar Expertise">
+                <i data-lucide="star" class="w-4 h-4"></i>
+            </button>
+            <span id="skill_${key}_bonus" class="text-sm font-semibold proficiency-bonus-display ml-2 w-10 text-right">+0</span>`;
         grid.appendChild(div);
+
         const profCheckbox = document.getElementById(`skill_${key}_proficient`);
-        if (profCheckbox) profCheckbox.addEventListener('change', calculateAllSheetBonuses);
+        const expertiseToggle = document.getElementById(`skill_${key}_expertise_toggle`);
+
+        if (profCheckbox && expertiseToggle) {
+            profCheckbox.addEventListener('change', () => {
+                const isProficient = profCheckbox.checked;
+                if (isProficient) {
+                    expertiseToggle.classList.remove('hidden'); // <<--- CORREÇÃO AQUI
+                    expertiseToggle.classList.add('visible');
+                } else {
+                    expertiseToggle.classList.add('hidden'); // <<--- CORREÇÃO AQUI
+                    expertiseToggle.classList.remove('visible', 'active', 'activating', 'deactivating');
+                    expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4"></i>';
+                    if(typeof lucide !== 'undefined') lucide.createIcons({nodes: [expertiseToggle]});
+                }
+                calculateAllSheetBonuses();
+            });
+
+            expertiseToggle.addEventListener('click', () => {
+                if (!profCheckbox.checked) return;
+
+                const isActive = expertiseToggle.classList.toggle('active');
+                expertiseToggle.classList.remove('activating', 'deactivating');
+                void expertiseToggle.offsetWidth; 
+                
+                if (isActive) {
+                    expertiseToggle.classList.add('activating');
+                    expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4 lucide-filled" style="fill: currentColor;"></i>';
+                } else {
+                    expertiseToggle.classList.add('deactivating');
+                    expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4"></i>';
+                }
+                if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [expertiseToggle] });
+                
+                setTimeout(() => expertiseToggle.classList.remove('activating', 'deactivating'), 300);
+                calculateAllSheetBonuses();
+            });
+        }
     });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
 
 function getSheetFormData() {
     if (!characterSheetForm) return {};
     const formData = new FormData(characterSheetForm); const sheetData = {};
     for (let [key, value] of formData.entries()) {
         const element = characterSheetForm.elements[key];
-        if (element?.type === 'checkbox') { sheetData[key] = element.checked; }
-        else if (key.endsWith('Score')) {
+        if (element?.type === 'checkbox' && !key.startsWith("skill_") && !key.startsWith("savingThrow_")) {
+            sheetData[key] = element.checked;
+        } else if (key.endsWith('Score')) {
             if (!sheetData.abilityScores) sheetData.abilityScores = {};
             const abilityName = key.replace(/Score/g, '');
             if (!sheetData.abilityScores[abilityName]) sheetData.abilityScores[abilityName] = {};
@@ -381,9 +449,14 @@ function getSheetFormData() {
     sheetData.savingThrowProficiencies = {};
     Object.keys(ABILITIES).forEach(key => { const cb = document.getElementById(`savingThrow_${key}_proficient`); if (cb) sheetData.savingThrowProficiencies[key] = cb.checked; });
     sheetData.skillProficiencies = {};
-    Object.keys(SKILLS).forEach(key => { const pCb = document.getElementById(`skill_${key}_proficient`); if (pCb) sheetData.skillProficiencies[key] = pCb.checked; });
+    sheetData.skillExpertise = {};
+    Object.keys(SKILLS).forEach(key => {
+        const pCb = document.getElementById(`skill_${key}_proficient`);
+        const eTg = document.getElementById(`skill_${key}_expertise_toggle`);
+        if (pCb) sheetData.skillProficiencies[key] = pCb.checked;
+        if (eTg) sheetData.skillExpertise[key] = eTg.classList.contains('active');
+    });
     ['experiencePoints','inspiration','hpMax','hpCurrent','hpTemp'].forEach(f => { if(sheetData[f]!==undefined && sheetData[f]!=='') sheetData[f]=parseInt(sheetData[f]); else if(sheetData[f]==='') sheetData[f]=0; });
-    console.log("[SheetLogic DIAGNÓSTICO] Dados do formulário para salvar:", JSON.parse(JSON.stringify(sheetData)));
     return sheetData;
 }
 
@@ -394,8 +467,10 @@ function populateSheetForm(sheetData) {
     if (sheetIdInput) sheetIdInput.value = sheetData.id || '';
     for (const key in sheetData) {
         const field = characterSheetForm.elements[key];
-        if (field && key !== 'abilityScores' && key !== 'savingThrowProficiencies' && key !== 'skillProficiencies') {
-            if (field.type === 'checkbox') field.checked = sheetData[key] || false;
+        if (field && key !== 'abilityScores' && key !== 'savingThrowProficiencies' && key !== 'skillProficiencies' && key !== 'skillExpertise') {
+            if (field.type === 'checkbox' && !key.startsWith("skill_") && !key.startsWith("savingThrow_")) {
+                 field.checked = sheetData[key] || false;
+            }
             else if (field.nodeName === 'SELECT' || field.nodeName === 'TEXTAREA' || field.type === 'text' || field.type === 'number') {
                 field.value = sheetData[key] === undefined || sheetData[key] === null ? '' : sheetData[key];
             }
@@ -408,13 +483,43 @@ function populateSheetForm(sheetData) {
         });
     } else { Object.keys(ABILITIES).forEach(key => { const el = document.getElementById(`${key}Score`); if (el) el.value = 10; }); }
     if (sheetData.savingThrowProficiencies) Object.entries(sheetData.savingThrowProficiencies).forEach(([k, v]) => { const cb = document.getElementById(`savingThrow_${k}_proficient`); if (cb) cb.checked = v; });
-    if (sheetData.skillProficiencies) Object.entries(sheetData.skillProficiencies).forEach(([k, v]) => { const cb = document.getElementById(`skill_${k}_proficient`); if (cb) cb.checked = v; });
+    
+    if (sheetData.skillProficiencies) {
+        Object.entries(sheetData.skillProficiencies).forEach(([key, isProficient]) => {
+            const profCheckbox = document.getElementById(`skill_${key}_proficient`);
+            if (profCheckbox) profCheckbox.checked = isProficient;
+            
+            const expertiseToggle = document.getElementById(`skill_${key}_expertise_toggle`);
+            if(expertiseToggle) {
+                const hasExpertise = sheetData.skillExpertise ? sheetData.skillExpertise[key] || false : false;
+                if(isProficient) {
+                    expertiseToggle.classList.remove('hidden'); // Garante que 'hidden' seja removido
+                    expertiseToggle.classList.add('visible');
+                    if(hasExpertise) {
+                        expertiseToggle.classList.add('active');
+                        expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4 lucide-filled" style="fill: currentColor;"></i>';
+                    } else {
+                        expertiseToggle.classList.remove('active');
+                        expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4"></i>';
+                    }
+                } else {
+                    expertiseToggle.classList.add('hidden'); // Garante que 'hidden' seja adicionado
+                    expertiseToggle.classList.remove('visible', 'active');
+                    expertiseToggle.innerHTML = '<i data-lucide="star" class="w-4 h-4"></i>';
+                }
+            }
+        });
+    }
+    
     if (raceSelect && sheetData.race) raceSelect.value = sheetData.race;
     if (armorTypeSelect && sheetData.armorType) armorTypeSelect.value = sheetData.armorType;
     if (spellcastingAbilitySelect && sheetData.spellcastingAbility) spellcastingAbilitySelect.value = sheetData.spellcastingAbility;
     if(shieldEquippedCheckbox && sheetData.shieldEquipped !== undefined) shieldEquippedCheckbox.checked = sheetData.shieldEquipped;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     calculateAllSheetBonuses();
 }
+
 
 export function openSheetEditor(sheetData = null) {
     showSheetEditorUI();
@@ -436,19 +541,19 @@ export function openSheetEditor(sheetData = null) {
 async function saveSheetData() {
     if (!currentUserIdForSheets) { showCustomPopup(errorPopup, "Erro Arcano!", "Não autenticado.", 4000); return; }
     const sheetData = getSheetFormData();
-    console.log("[SheetLogic DIAGNÓSTICO] Tentando salvar sheetData:", JSON.parse(JSON.stringify(sheetData)), "Para ID da ficha (se editando):", currentEditingSheetId);
+    // console.log("[SheetLogic DIAGNÓSTICO] Tentando salvar sheetData:", JSON.parse(JSON.stringify(sheetData)), "Para ID da ficha (se editando):", currentEditingSheetId);
     try {
         const sheetsCollectionPath = `artifacts/${currentAppIdPath}/users/${currentUserIdForSheets}/characterSheets`;
         if (currentEditingSheetId) {
             await setDoc(doc(dbInstance, sheetsCollectionPath, currentEditingSheetId), sheetData, { merge: true });
-            console.log("[SheetLogic DIAGNÓSTICO] Ficha atualizada com ID:", currentEditingSheetId);
+            // console.log("[SheetLogic DIAGNÓSTICO] Ficha atualizada com ID:", currentEditingSheetId);
             showCustomPopup(successPopup, "Pergaminho Atualizado!", "Alterações seladas.", 2800, showSheetListViewUI);
         } else {
             const docRef = await addDoc(collection(dbInstance, sheetsCollectionPath), sheetData);
             currentEditingSheetId = docRef.id;
             const sheetIdInput = document.getElementById('sheetId');
             if (sheetIdInput) sheetIdInput.value = currentEditingSheetId;
-            console.log("[SheetLogic DIAGNÓSTICO] Nova ficha criada com ID:", docRef.id);
+            // console.log("[SheetLogic DIAGNÓSTICO] Nova ficha criada com ID:", docRef.id);
             showCustomPopup(successPopup, "Novo Pacto Selado!", `Ficha "${sheetData.characterName || 'Sem Nome'}" consagrada.`, 2800, showSheetListViewUI);
         }
     } catch (e) {
@@ -459,7 +564,7 @@ async function saveSheetData() {
 
 async function deleteSheet() {
     if (!currentUserIdForSheets || !sheetIdToDelete) return;
-    console.log("[SheetLogic DIAGNÓSTICO] Tentando deletar ficha ID:", sheetIdToDelete);
+    // console.log("[SheetLogic DIAGNÓSTICO] Tentando deletar ficha ID:", sheetIdToDelete);
     try {
         await deleteDoc(doc(dbInstance, `artifacts/${currentAppIdPath}/users/${currentUserIdForSheets}/characterSheets`, sheetIdToDelete));
         showCustomPopup(successPopup, "Ficha Exilada!", "Conhecimento banido.", 2000);
@@ -473,28 +578,31 @@ async function deleteSheet() {
 }
 
 export function loadCharacterSheets() {
-    if (!currentUserIdForSheets) {
+    if (!currentUserIdForSheets || !dbInstance || !currentAppIdPath) {
         if (characterSheetsGrid) characterSheetsGrid.innerHTML = '';
-        if (noSheetsMessage) { noSheetsMessage.classList.remove('hidden'); noSheetsMessage.textContent = "Autentique-se para ver seus grimórios."; }
+        if (noSheetsMessage) { noSheetsMessage.classList.remove('hidden'); noSheetsMessage.textContent = "Autentique-se ou aguarde a inicialização."; }
+        // console.warn("[SheetLogic] Não foi possível carregar fichas: usuário não autenticado ou DB não inicializado.");
         return;
     }
-    console.log("[SheetLogic DIAGNÓSTICO] Carregando fichas para usuário:", currentUserIdForSheets);
+    // console.log("[SheetLogic DIAGNÓSTICO] Carregando fichas para usuário:", currentUserIdForSheets, "Path:", `artifacts/${currentAppIdPath}/users/${currentUserIdForSheets}/characterSheets`);
     if (unsubscribeSheetsListener) {
-        console.log("[SheetLogic DIAGNÓSTICO] Desinscrevendo do listener de fichas anterior antes de recarregar.");
+        // console.log("[SheetLogic DIAGNÓSTICO] Desinscrevendo do listener de fichas anterior antes de recarregar.");
         unsubscribeSheetsListener();
         unsubscribeSheetsListener = null;
     }
-    const sheetsCollectionRef = collection(dbInstance, `artifacts/${currentAppIdPath}/users/${currentUserIdForSheets}/characterSheets`);
+    const sheetsCollectionPath = `artifacts/${currentAppIdPath}/users/${currentUserIdForSheets}/characterSheets`;
+    const sheetsCollectionRef = collection(dbInstance, sheetsCollectionPath);
+
     unsubscribeSheetsListener = onSnapshot(sheetsCollectionRef, (querySnapshot) => {
-        console.log(`[SheetLogic DIAGNÓSTICO] onSnapshot: Recebeu ${querySnapshot.docs.length} documentos.`);
+        // console.log(`[SheetLogic DIAGNÓSTICO] onSnapshot: Recebeu ${querySnapshot.docs.length} documentos.`);
         if (characterSheetsGrid) characterSheetsGrid.innerHTML = '';
         if (querySnapshot.empty) {
-            console.log("[SheetLogic DIAGNÓSTICO] onSnapshot: Nenhuma ficha encontrada.");
+            // console.log("[SheetLogic DIAGNÓSTICO] onSnapshot: Nenhuma ficha encontrada.");
             if (noSheetsMessage) { noSheetsMessage.classList.remove('hidden'); noSheetsMessage.textContent = "Nenhum grimório encontrado. Conjure um novo!"; }
         } else {
             if (noSheetsMessage) noSheetsMessage.classList.add('hidden');
             querySnapshot.forEach((docSnap) => {
-                console.log("[SheetLogic DIAGNÓSTICO] onSnapshot: Processando doc ID:", docSnap.id);
+                // console.log("[SheetLogic DIAGNÓSTICO] onSnapshot: Processando doc ID:", docSnap.id);
                 displaySheetCard(docSnap.data(), docSnap.id);
             });
         }
@@ -507,7 +615,6 @@ export function loadCharacterSheets() {
 
 function displaySheetCard(sheetData, sheetId) {
     if (!characterSheetsGrid) return;
-    
     try {
         const raceName = sheetData.race && RACES[sheetData.race] ? RACES[sheetData.race].name : (sheetData.race || 'N/A');
         const card = document.createElement('div');
@@ -532,7 +639,6 @@ function displaySheetCard(sheetData, sheetId) {
             } else { openSheetEditor({ ...sheetData, id: sheetId }); }
         });
         characterSheetsGrid.appendChild(card);
-        
     } catch (error) {
         console.error("[SheetLogic ERRO] Erro ao exibir card para ID:", sheetId, error, sheetData);
     }
